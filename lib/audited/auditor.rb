@@ -192,6 +192,23 @@ module Audited
           audits_to_combine.unscope(:limit).where("version < ?", combine_target.version).delete_all
         end
       end
+	  
+	  def audit_create
+        write_audit(action: 'create', audited_changes: audited_attributes,
+                    comment: audit_comment)
+      end
+
+      def audit_update
+        unless (changes = audited_changes).empty? && (audit_comment.blank? || audited_options[:update_with_comment_only] == false)
+          write_audit(action: 'update', audited_changes: changes,
+                      comment: audit_comment)
+        end
+      end
+
+      def audit_destroy
+        write_audit(action: 'destroy', audited_changes: audited_attributes,
+                    comment: audit_comment) unless new_record?
+      end
 
       protected
 
@@ -220,22 +237,6 @@ module Audited
         end
       end
 	  
-	        def audit_create
-        write_audit(action: 'create', audited_changes: audited_attributes,
-                    comment: audit_comment)
-      end
-
-      def audit_update
-        unless (changes = audited_changes).empty? && (audit_comment.blank? || audited_options[:update_with_comment_only] == false)
-          write_audit(action: 'update', audited_changes: changes,
-                      comment: audit_comment)
-        end
-      end
-
-      def audit_destroy
-        write_audit(action: 'destroy', audited_changes: audited_attributes,
-                    comment: audit_comment) unless new_record?
-      end
 
       private
 
